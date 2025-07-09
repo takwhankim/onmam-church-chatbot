@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>온맘교회 홈페이지 - 챗봇 데모</title>
+    <style>
+        /* 기존 홈페이지 스타일 (예시) */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .homepage-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .content-section {
+            margin-bottom: 30px;
+        }
+
+        .content-section h2 {
+            color: #4facfe;
+            border-bottom: 2px solid #4facfe;
+            padding-bottom: 10px;
+        }
+
+        /* 여기부터 챗봇 임베드 코드 */
+        
+        /* 챗봇 플로팅 버튼 */
+        .chatbot-float-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+        }
+
+        .chatbot-float-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(79, 172, 254, 0.6);
+        }
+
+        .chatbot-float-button.active {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+        }
+
+        /* 챗봇 팝업 오버레이 */
+        .chatbot-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .chatbot-overlay.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* 챗봇 팝업 컨테이너 */
+        .chatbot-popup {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            z-index: 1001;
+            display: none;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .chatbot-popup.active {
+            display: block;
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .chatbot-popup {
+                width: calc(100vw - 40px);
+                height: calc(100vh - 140px);
+                bottom: 90px;
+                right: 20px;
+                left: 20px;
+            }
+        }
+
+        /* 챗봇 내부 스타일 */
+        .chatbot-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .chatbot-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .chatbot-header::before {
+            content: '✝';
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+        }
+
+        .chatbot-close {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .chatbot-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .chatbot-header h1 {
+            font-size: 18px;
+            margin: 0 0 5px 0;
+        }
+
+        .chatbot-header p {
+            font-size: 12px;
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-size: 14px;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+
+        .message.bot .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 6px;
+        }
+
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .quick-button {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-button:hover {
+            background: #1976d2;
+            color: white;
+        }
+
+        .input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .message-input:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .send-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+        }
+
+        .church-info {
+            background: #f0f8ff;
+            border-left: 4px solid #4facfe;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+
+        .bible-verse {
+            background: #fff8dc;
+            border-left: 4px solid #daa520;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 2px;
+        }
+
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            background: #666;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* 알림 배지 */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background: #ff4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- 기존 홈페이지 내용 (예시) -->
+    <div class="homepage-content">
+        <div class="header">
+            <h1>온맘교회</h1>
+            <p>사랑과 은혜가 넘치는 교회</p>
+        </div>
+        
+        <div class="content-section">
+            <h2>환영합니다</h2>
+            <p>온맘교회는 하나님의 사랑을 실천하는 교회입니다. 언제든지 방문하셔서 함께 예배하고 교제하시기 바랍니다.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>예배 안내</h2>
+            <ul>
+                <li>주일 1부 예배: 오전 9:00</li>
+                <li>주일 2부 예배: 오전 11:00</li>
+                <li>주일 3부 예배: 오후 2:00</li>
+                <li>수요예배: 오후 7:30</li>
+                <li>금요기도회: 오후 7:30</li>
+            </ul>
+        </div>
+
+        <div class="content-section">
+            <h2>오시는 길</h2>
+            <p>주소: 서울시 강남구 테헤란로 123<br>
+            전화: 02-6462-0200</p>
+        </div>
+
+        <div class="content-section">
+            <h2>AI 도우미</h2>
+            <p>궁금한 점이 있으시면 우하단의 AI 도우미 버튼을 클릭해서 언제든 문의해주세요!</p>
+        </div>
+    </div>
+
+    <!-- 여기부터 챗봇 임베드 코드 -->
+    <!-- 챗봇 플로팅 버튼 -->
+    <button class="chatbot-float-button" onclick="toggleChatbot()">
+        💬
+        <span class="notification-badge">!</span>
+    </button>
+
+    <!-- 챗봇 팝업 오버레이 -->
+    <div class="chatbot-overlay" onclick="closeChatbot()"></div>
+
+    <!-- 챗봇 팝업 -->
+    <div class="chatbot-popup" id="chatbotPopup">
+        <div class="chatbot-container">
+            <div class="chatbot-header">
+                <h1>온맘교회 AI도우미</h1>
+                <p>궁금한 것이 있으시면 언제든 물어보세요!</p>
+                <button class="chatbot-close" onclick="closeChatbot()">×</button>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-content">
+                        샬롬! 저는 온맘교회 AI 도우미입니다. 🙏<br>
+                        찾아가는 길, 예배시간, 신앙 관련 질문 등 무엇이든 도와드릴게요!
+                        <div class="quick-buttons">
+                            <button class="quick-button" onclick="quickQuestion('예배시간')">예배시간</button>
+                            <button class="quick-button" onclick="quickQuestion('찾아가는 길')">찾아가는 길</button>
+                            <button class="quick-button" onclick="quickQuestion('교회 프로그램')">교회 프로그램</button>
+                            <button class="quick-button" onclick="quickQuestion('목사님께 질문')">목사님께 질문</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <div class="input-wrapper">
+                    <input type="text" id="messageInput" class="message-input" placeholder="메시지를 입력하세요..." onkeypress="handleKeyPress(event)">
+                    <button class="send-button" onclick="sendMessage()">전송</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 교회 정보 및 데이터
+        const CHURCH_INFO = {
+            name: "온맘교회",
+            address: "서울시 강남구 테헤란로 123",
+            phone: "02-6462-0200",
+            pastor: "김택환",
+            services: {
+                "주일 1부 예배": "오전 9:00",
+                "주일 2부 예배": "오전 11:00",
+                "주일 3부 예배": "오후 2:00",
+                "수요예배": "오후 7:30",
+                "금요기도회": "오후 7:30",
+                "새벽기도": "오전 5:30 (월-토)"
+            },
+            programs: [
+                "성경공부 (매주 화요일 오후 7시)",
+                "청년부 모임 (매주 토요일 오후 6시)",
+                "어린이 주일학교 (주일 오전 11시)",
+                "찬양대 연습 (매주 목요일 오후 8시)"
+            ],
+            directions: "지하철 2호선 강남역 3번 출구에서 도보 5분, 버스 정류장 '테헤란로' 하차"
+        };
+
+        // 방문자 FAQ (일부만 포함, 실제로는 100개 모두 포함)
+        const VISITOR_FAQ = {
+            "처음": "처음 오시는 분들을 진심으로 환영합니다! 주일 예배 30분 전에 오시면 안내 도우미가 자리를 안내해드립니다.",
+            "복장": "편안한 평상복으로 오시면 됩니다. 정장을 입을 필요는 없어요.",
+            "혼자": "혼자 오셔도 전혀 문제없습니다. 교회 가족들이 따뜻하게 맞아드릴 것입니다.",
+            "주차": "교회 주차장이 있습니다. 만차일 경우 근처 유료 주차장을 이용해주세요.",
+            "기도": "기도는 하나님과의 대화입니다. 감사, 회개, 간구, 찬양의 순서로 하시면 됩니다."
+        };
+
+        const BIBLE_VERSES = {
+            "위로": "하나님은 우리의 모든 환난 중에서 우리를 위로하사 (고린도후서 1:4)",
+            "평안": "평안을 너희에게 끼치노니 곧 나의 평안을 너희에게 주노라 (요한복음 14:27)",
+            "사랑": "하나님이 세상을 이처럼 사랑하사 독생자를 주셨으니 (요한복음 3:16)"
+        };
+
+        // 챗봇 기능
+        let isChatbotOpen = false;
+
+        function toggleChatbot() {
+            const button = document.querySelector('.chatbot-float-button');
+            const overlay = document.querySelector('.chatbot-overlay');
+            const popup = document.querySelector('.chatbot-popup');
+            const badge = document.querySelector('.notification-badge');
+
+            if (isChatbotOpen) {
+                closeChatbot();
+            } else {
+                openChatbot();
+            }
+        }
+
+        function openChatbot() {
+            const button = document.querySelector('.chatbot-float-button');
+            const overlay = document.querySelector('.chatbot-overlay');
+            const popup = document.querySelector('.chatbot-popup');
+            const badge = document.querySelector('.notification-badge');
+
+            button.classList.add('active');
+            overlay.classList.add('active');
+            popup.classList.add('active');
+            badge.style.display = 'none';
+            isChatbotOpen = true;
+
+            // 입력창에 포커스
+            setTimeout(() => {
+                document.getElementById('messageInput').focus();
+            }, 300);
+        }
+
+        function closeChatbot() {
+            const button = document.querySelector('.chatbot-float-button');
+            const overlay = document.querySelector('.chatbot-overlay');
+            const popup = document.querySelector('.chatbot-popup');
+
+            button.classList.remove('active');
+            overlay.classList.remove('active');
+            popup.classList.remove('active');
+            isChatbotOpen = false;
+        }
+
+        function addMessage(content, isUser = false) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            contentDiv.innerHTML = content;
+            
+            messageDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message bot';
+            typingDiv.id = 'typing-indicator';
+            
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content typing-indicator';
+            contentDiv.innerHTML = `
+                응답 중
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            
+            typingDiv.appendChild(contentDiv);
+            messagesContainer.appendChild(typingDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+
+        function processMessage(message) {
+            const lowerMessage = message.toLowerCase();
+            
+            // 교회 이름 관련
+            if (lowerMessage.includes('교회') && (lowerMessage.includes('이름') || lowerMessage.includes('명') || lowerMessage.includes('뭐') || lowerMessage.includes('어디'))) {
+                return `샤롬'온맘교회'입니다. 🙏`;
+            }
+            
+            // 담임목사 이름 관련
+            if (lowerMessage.includes('담임목사') || (lowerMessage.includes('목사') && (lowerMessage.includes('이름') || lowerMessage.includes('누구') || lowerMessage.includes('뭐')))) {
+                return `김택환 목사님입니다. 🙏`;
+            }
+            
+            // 전화번호 관련
+            if (lowerMessage.includes('전화') || lowerMessage.includes('번호') || lowerMessage.includes('연락처') || lowerMessage.includes('폰')) {
+                return `<div class="church-info"><strong>온맘교회 연락처</strong><br>📞 전화번호: 02-6462-0200<br>📍 주소: 서울시 강남구 테헤란로 123</div>언제든 편하게 연락주세요!`;
+            }
+            
+            // 예배시간 관련
+            if (lowerMessage.includes('예배') || lowerMessage.includes('시간') || lowerMessage.includes('언제')) {
+                let response = `<div class="church-info"><strong>온맘교회 예배시간</strong><br>`;
+                for (const [service, time] of Object.entries(CHURCH_INFO.services)) {
+                    response += `• ${service}: ${time}<br>`;
+                }
+                response += `</div>더 자세한 정보가 필요하시면 02-6462-0200로 문의해주세요!`;
+                return response;
+            }
+            
+            // 찾아가는 길 관련
+            if (lowerMessage.includes('길') || lowerMessage.includes('위치') || lowerMessage.includes('주소') || lowerMessage.includes('어디')) {
+                return `<div class="church-info"><strong>온맘교회 위치</strong><br>📍 주소: 서울시 강남구 테헤란로 123<br>🚇 교통: 지하철 2호선 강남역 3번 출구에서 도보 5분<br>📞 전화: 02-6462-0200</div>구글맵이나 네이버맵에서 "온맘교회"를 검색하시면 더 자세한 길안내를 받으실 수 있습니다!`;
+            }
+            
+            // 방문자 FAQ 확인
+            for (const [keyword, answer] of Object.entries(VISITOR_FAQ)) {
+                if (lowerMessage.includes(keyword)) {
+                    return `${answer}<br><br>더 궁금한 점이 있으시면 언제든 문의해주세요! 📞 02-6462-0200`;
+                }
+            }
+            
+            // 성경 구절 관련
+            for (const [keyword, verse] of Object.entries(BIBLE_VERSES)) {
+                if (lowerMessage.includes(keyword)) {
+                    return `<div class="bible-verse">${verse}</div>이 말씀이 위로와 힘이 되시길 기도합니다. 🙏`;
+                }
+            }
+            
+            // 기본 응답
+            return "좋은 질문이네요! 더 자세한 답변을 위해 교회 사무실(02-6462-0200)로 연락주시거나, 주일 예배 후 김택환 목사님께 직접 문의해보시는 것은 어떨까요?";
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            addMessage(message, true);
+            input.value = '';
+            
+            showTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                const response = processMessage(message);
+                addMessage(response);
+            }, 1000 + Math.random() * 1000);
+        }
+
+        function quickQuestion(question) {
+            const input = document.getElementById('messageInput');
+            input.value = question;
+            sendMessage();
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 페이지 로드 시 알림 배지 표시
+        document.addEventListener('DOMContentLoaded', function() {
+            // 5초 후 배지 자동 숨김
+            setTimeout(() => {
+                const badge = document.querySelector('.notification-badge');
+                if (badge) {
+                    badge.style.display = 'none';
+                }
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
