@@ -588,6 +588,11 @@
         function processMessage(message) {
             const lowerMessage = message.toLowerCase();
             
+            // 인사말 관련
+            if (lowerMessage.includes('안녕') || lowerMessage.includes('안녕하세요') || lowerMessage.includes('하이') || lowerMessage.includes('hello')) {
+                return `샬롬! 안녕하세요, 온맘교회에 오신것을 환영합니다. 무엇을 도와 드릴까요? 🙏`;
+            }
+            
             // 교회 이름 관련
             if (lowerMessage.includes('교회') && (lowerMessage.includes('이름') || lowerMessage.includes('명') || lowerMessage.includes('뭐') || lowerMessage.includes('어디'))) {
                 return `샤롬'온맘교회'입니다. 🙏`;
