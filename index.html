@@ -1390,6 +1390,12 @@
         function processMessage(message) {
             const lowerMessage = message.toLowerCase();
             
+            // URL이 포함된 경우 특별 처리
+            const urlRegex = /(https?:\/\/[^\s]+)/g;
+            if (urlRegex.test(message)) {
+                return "링크를 공유해주셔서 감사합니다! 위에 미리보기를 확인해보세요. 😊";
+            }
+            
             // 인사말 관련
             if (lowerMessage.includes('안녕') || lowerMessage.includes('안녕하세요') || lowerMessage.includes('하이') || lowerMessage.includes('hello')) {
                 return `샬롬! 안녕하세요, 온맘교회에 오신것을 환영합니다. 무엇을 도와 드릴까요? 🙏`;
@@ -1439,8 +1445,15 @@
                 }
             }
             
-            // 기본 응답
-            return "좋은 질문이네요! 더 자세한 답변을 위해 교회 사무실(02-6462-0200)로 연락주시거나, 주일 예배 후 김택환 목사님께 직접 문의해보시는 것은 어떨까요?";
+            // 모르는 질문들
+            const unknownQuestions = [
+                "죄송하지만 그 부분에 대해서는 잘 모르겠어요. 김택환 목사님께 직접 문의해보시는 것은 어떨까요?",
+                "그 질문에 대해서는 정확한 답변을 드리기 어렵네요. 교회 사무실(02-6462-0200)로 연락주시면 더 자세한 안내를 받으실 수 있습니다.",
+                "죄송합니다. 그 내용은 제가 답변하기 어려운 질문이에요. 목사님이나 교회 관계자께 문의해보시길 권합니다.",
+                "그런 질문은 저보다는 목사님께서 더 정확한 답변을 해주실 수 있을 것 같아요. 교회로 직접 연락해보세요!"
+            ];
+            
+            return unknownQuestions[Math.floor(Math.random() * unknownQuestions.length)];
         }
 
         function sendMessage() {
