@@ -125,11 +125,218 @@
         /* 모바일 반응형 */
         @media (max-width: 768px) {
             .chatbot-popup {
-                width: calc(100vw - 40px);
-                height: calc(100vh - 140px);
+                width: calc(100vw - 20px);
+                height: calc(100vh - 120px);
                 bottom: 90px;
-                right: 20px;
-                left: 20px;
+                right: 10px;
+                left: 10px;
+                border-radius: 15px;
+            }
+
+            .chatbot-float-button {
+                width: 56px;
+                height: 56px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 22px;
+            }
+
+            .chatbot-header {
+                padding: 15px;
+            }
+
+            .chatbot-header h1 {
+                font-size: 16px;
+                margin: 0 0 3px 0;
+            }
+
+            .chatbot-header p {
+                font-size: 11px;
+            }
+
+            .chat-messages {
+                padding: 15px;
+            }
+
+            .message-content {
+                max-width: 85%;
+                padding: 10px 14px;
+                font-size: 14px;
+                line-height: 1.5;
+            }
+
+            .quick-buttons {
+                gap: 5px;
+                margin-top: 8px;
+            }
+
+            .quick-button {
+                padding: 6px 10px;
+                font-size: 11px;
+                border-radius: 10px;
+            }
+
+            .input-container {
+                padding: 12px;
+            }
+
+            .message-input {
+                padding: 12px 16px;
+                font-size: 16px; /* iOS 줌 방지 */
+                border-radius: 25px;
+            }
+
+            .send-button {
+                padding: 12px 16px;
+                font-size: 13px;
+                border-radius: 25px;
+                min-width: 50px;
+            }
+
+            .notification-badge {
+                width: 18px;
+                height: 18px;
+                font-size: 11px;
+                top: -3px;
+                right: -3px;
+            }
+
+            /* 모바일 터치 개선 */
+            .chatbot-close {
+                padding: 8px;
+                font-size: 18px;
+            }
+
+            .church-info, .bible-verse {
+                padding: 8px;
+                margin: 4px 0;
+                font-size: 13px;
+            }
+        }
+
+        /* 작은 모바일 화면 (iPhone SE 등) */
+        @media (max-width: 375px) {
+            .chatbot-popup {
+                width: calc(100vw - 16px);
+                height: calc(100vh - 110px);
+                right: 8px;
+                left: 8px;
+                bottom: 80px;
+            }
+
+            .chatbot-float-button {
+                width: 52px;
+                height: 52px;
+                bottom: 12px;
+                right: 12px;
+                font-size: 20px;
+            }
+
+            .chatbot-header {
+                padding: 12px;
+            }
+
+            .chatbot-header h1 {
+                font-size: 15px;
+            }
+
+            .chatbot-header p {
+                font-size: 10px;
+            }
+
+            .chat-messages {
+                padding: 12px;
+            }
+
+            .message-content {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+
+            .quick-button {
+                padding: 5px 8px;
+                font-size: 10px;
+            }
+
+            .input-container {
+                padding: 10px;
+            }
+
+            .message-input {
+                padding: 10px 14px;
+                font-size: 16px;
+            }
+
+            .send-button {
+                padding: 10px 14px;
+                font-size: 12px;
+            }
+        }
+
+        /* 가로 모드 최적화 */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .chatbot-popup {
+                height: calc(100vh - 80px);
+                bottom: 50px;
+            }
+
+            .chatbot-float-button {
+                bottom: 10px;
+            }
+        }
+
+        /* 터치 디바이스 최적화 */
+        @media (hover: none) and (pointer: coarse) {
+            .quick-button, .send-button, .chatbot-close, .chatbot-float-button {
+                min-height: 44px; /* Apple 터치 가이드라인 */
+                min-width: 44px;
+            }
+
+            .quick-button {
+                padding: 8px 12px;
+            }
+
+            .message-input {
+                min-height: 44px;
+                box-sizing: border-box;
+            }
+        }
+
+        /* iOS Safari 뷰포트 높이 문제 해결 */
+        @supports (-webkit-touch-callout: none) {
+            .chatbot-popup {
+                height: calc(100vh - 120px);
+                height: calc(var(--vh, 1vh) * 100 - 120px);
+            }
+        }
+
+        /* 스크롤바 스타일링 (모바일) */
+        .chat-messages::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.2);
+            border-radius: 2px;
+        }
+
+        /* 모바일에서 텍스트 선택 방지 (버튼들) */
+        .quick-button, .send-button, .chatbot-close, .chatbot-float-button {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* 입력창 포커스 시 줌 방지 */
+        @media screen and (max-width: 768px) {
+            .message-input {
+                font-size: 16px !important; /* iOS 줌 방지를 위한 최소 폰트 크기 */
             }
         }
 
@@ -525,10 +732,17 @@
             badge.style.display = 'none';
             isChatbotOpen = true;
 
-            // 입력창에 포커스
+            // 모바일에서 스크롤 방지
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                document.body.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.width = '100%';
+            }
+
+            // 입력창에 포커스 (모바일에서는 약간의 딜레이)
             setTimeout(() => {
                 document.getElementById('messageInput').focus();
-            }, 300);
+            }, /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) ? 500 : 300);
         }
 
         function closeChatbot() {
@@ -540,6 +754,13 @@
             overlay.classList.remove('active');
             popup.classList.remove('active');
             isChatbotOpen = false;
+
+            // 모바일에서 스크롤 복원
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+            }
         }
 
         function addMessage(content, isUser = false) {
@@ -671,8 +892,18 @@
             }
         }
 
-        // 페이지 로드 시 알림 배지 표시
+        // 페이지 로드 시 알림 배지 표시 및 모바일 최적화
         document.addEventListener('DOMContentLoaded', function() {
+            // 모바일 뷰포트 높이 설정 (iOS Safari 대응)
+            function setVH() {
+                let vh = window.innerHeight * 0.01;
+                document.documentElement.style.setProperty('--vh', `${vh}px`);
+            }
+            
+            setVH();
+            window.addEventListener('resize', setVH);
+            window.addEventListener('orientationchange', setVH);
+
             // 5초 후 배지 자동 숨김
             setTimeout(() => {
                 const badge = document.querySelector('.notification-badge');
@@ -680,6 +911,28 @@
                     badge.style.display = 'none';
                 }
             }, 5000);
+
+            // 모바일에서 키보드 열릴 때 대응
+            if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+                const messageInput = document.getElementById('messageInput');
+                const chatMessages = document.getElementById('chatMessages');
+                
+                messageInput.addEventListener('focus', function() {
+                    setTimeout(() => {
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 300);
+                });
+
+                // 모바일에서 더블탭 줌 방지
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', function(event) {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+            }
         });
     </script>
 </body>
